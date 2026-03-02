@@ -34,52 +34,83 @@ async function fetchRoute(a,b){
 }
 
 function initMap(){
-  // Use Mapbox GL JS but a custom OSM raster style so no token required
-  const style = {
-    version: 8,
-    sources: {
-      'raster-tiles': { type: 'raster', tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256 }
-    },
-    layers: [{ id: 'osm-tiles', type: 'raster', source: 'raster-tiles' }]
-  };
-
-  mapboxgl.accessToken = undefined;
-  map = new mapboxgl.Map({
-    container: 'map',
-    style: style,
-    center: [80.7, 7.5],
-    zoom: 7
+  // Initialize Google Maps (map-only 3D via tilt/heading)
+  map = new google.maps.Map(document.getElementById('map'), {
+    center: { lat: 7.5, lng: 80.7 },
+    zoom: 7,
+    tilt: 45,
+    heading: 0,
+    mapId: undefined // allow default style; user can enable premium mapId if desired
   });
 
-  map.on('load', async ()=>{
+  // wait for idle which indicates initial tiles loaded
+  google.maps.event.addListenerOnce(map, 'idle', async ()=>{
     itinerary = await fetchItinerary();
     await setupStops(itinerary.stops);
     await buildFullRoute(itinerary.stops);
     addRouteLayers();
     addVehicleMarker();
     fitMapToStops(itinerary.stops);
-    // initialize icon selector
     initIconSelector();
-  })
+  });
 }
 
 function fitMapToStops(stops){
-  const bounds = new mapboxgl.LngLatBounds();
-  stops.forEach(s => bounds.extend([s.lng, s.lat]));
-  map.fitBounds(bounds, {padding:60, maxZoom:9, duration:1500});
+  const bounds = new google.maps.LatLngBounds();
+  stops.forEach(s => bounds.extend(new google.maps.LatLng(s.lat, s.lng)));
+  map.fitBounds(bounds, 60);
 }
 
 async function setupStops(stops){
+  // Create a custom OverlayView for each stop so we can use the existing HTML/CSS
+  class StopOverlay extends google.maps.OverlayView {
+    constructor(stop){
+      super();
+      this.stop = stop;
+      this.div = null;
+    }
+    onAdd(){
+      this.div = document.createElement('div');
+      this.div.className = 'stop-pin';
+      this.div.innerHTML = `<div class="pin"><div class="bg"><img src="${this.stop.photoUrl}"/></div></div>`;
+      this.getPanes().overlayMouseTarget.appendChild(this.div);
+    }
+    draw(){
+      const proj = this.getProjection && this.getProjection();
+      if(!proj || !this.div) return;
+      const pos = proj.fromLatLngToDivPixel(new google.maps.LatLng(this.stop.lat, this.stop.lng));
+      if(pos){
+        this.div.style.left = pos.x + 'px';
+        this.div.style.top = pos.y + 'px';
+      }
+    }
+    onRemove(){
+      if(this.div && this.div.parentNode) this.div.parentNode.removeChild(this.div);
+      this.div = null;
+    }
+    getElement(){ return this.div; }
+  }
+
   stops.forEach(s => {
+    // prefer AdvancedMarkerView when available
     const el = document.createElement('div');
     el.className = 'stop-pin';
     el.innerHTML = `<div class="pin"><div class="bg"><img src="${s.photoUrl}"/></div></div>`;
-    const marker = new mapboxgl.Marker(el).setLngLat([s.lng, s.lat]).addTo(map);
-    // store marker for visited tracking
+
+    let marker;
+    if(window.google && google.maps && google.maps.marker && google.maps.marker.AdvancedMarkerView){
+      marker = new google.maps.marker.AdvancedMarkerView({ map, position: { lat: s.lat, lng: s.lng }, content: el });
+    } else {
+      const overlay = new StopOverlay(s);
+      overlay.setMap(map);
+      marker = overlay;
+    }
+
     stopMarkers.push({ id: s.id, stop: s, marker: marker });
     // ensure initial unvisited state
-    el.classList.remove('visited');
-  })
+    const domEl = (marker.getElement && marker.getElement()) || marker.content || null;
+    if(domEl) domEl.classList.remove('visited');
+  });
 }
 
 async function buildFullRoute(stops){
@@ -100,30 +131,60 @@ async function buildFullRoute(stops){
 }
 
 function addRouteLayers(){
-  if(map.getSource('route-full')) map.removeLayer('route-full') || map.removeSource('route-full');
-  map.addSource('route-full', { type:'geojson', data: {type:'Feature', geometry:{type:'LineString', coordinates: routeGeo}} });
-  map.addLayer({ id:'route-full', type:'line', source:'route-full', paint:{ 'line-width': 8, 'line-color':'#f44336', 'line-opacity':0.25 } });
-
-  map.addSource('route-progress', { type:'geojson', data: {type:'Feature', geometry:{type:'LineString', coordinates: []}} });
-  map.addLayer({ id:'route-progress', type:'line', source:'route-progress', paint:{ 'line-width':10, 'line-color':'#c0392b' } });
-
-  // waypoint dots
-  const waypoints = routeGeo.filter((p,i)=> i%15===0).map(c=>({type:'Feature', geometry:{type:'Point', coordinates:c}}));
-  map.addSource('wps', { type:'geojson', data: {type:'FeatureCollection', features: waypoints} });
-  map.addLayer({ id:'wps', type:'circle', source:'wps', paint:{'circle-radius':4,'circle-color':'#8b5e3c'} });
+  // Convert routeGeo ([lng,lat]) to google maps LatLngLiteral
+  const fullPath = routeGeo.map(p => ({ lat: p[1], lng: p[0] }));
+  // full polyline
+  if(window.fullPolyline) window.fullPolyline.setMap(null);
+  window.fullPolyline = new google.maps.Polyline({ path: fullPath, strokeColor: '#f44336', strokeOpacity: 0.25, strokeWeight: 8, map });
+  // progress polyline
+  if(window.progressPolyline) window.progressPolyline.setMap(null);
+  window.progressPolyline = new google.maps.Polyline({ path: [], strokeColor: '#c0392b', strokeOpacity: 1, strokeWeight: 10, map });
+  // waypoints as small markers (optional)
+  if(window.waypointMarkers){ window.waypointMarkers.forEach(m=>m.setMap(null)); }
+  window.waypointMarkers = routeGeo.filter((p,i)=> i%15===0).map(c=> new google.maps.Marker({ position: {lat: c[1], lng: c[0]}, icon: { path: google.maps.SymbolPath.CIRCLE, scale: 4, fillColor:'#8b5e3c', fillOpacity:1, strokeWeight:0 }, map }));
 }
 
 function addVehicleMarker(){
-  const el = document.createElement('div');
-  el.className = 'vehicle';
-  // inner rotator preserves Mapbox's positioning transform on the outer element
-  const inner = document.createElement('div');
-  inner.className = 'vehicle-rot';
-  // prefer a currentIconUrl if user already selected one, otherwise use itinerary's default
-  currentIconUrl = currentIconUrl || itinerary.vehicleIconUrl;
+  // create overlay for vehicle so we can rotate HTML easily
+  class VehicleOverlay extends google.maps.OverlayView {
+    constructor(){ super(); this.pos = null; this.div = null; }
+    onAdd(){
+      this.div = document.createElement('div');
+      this.div.className = 'vehicle';
+      const inner = document.createElement('div');
+      inner.className = 'vehicle-rot';
+      currentIconUrl = currentIconUrl || (itinerary && itinerary.vehicleIconUrl);
+      inner.innerHTML = `<img src="${currentIconUrl}" alt="vehicle"/>`;
+      this.div.appendChild(inner);
+      this.getPanes().overlayMouseTarget.appendChild(this.div);
+    }
+    draw(){
+      if(!this.pos || !this.div) return;
+      const proj = this.getProjection && this.getProjection();
+      if(!proj) return;
+      const p = proj.fromLatLngToDivPixel(new google.maps.LatLng(this.pos.lat, this.pos.lng));
+      if(p){ this.div.style.left = p.x + 'px'; this.div.style.top = p.y + 'px'; }
+    }
+    onRemove(){ if(this.div && this.div.parentNode) this.div.parentNode.removeChild(this.div); this.div = null; }
+    setPosition(latlng){ this.pos = latlng; this.draw(); }
+    getElement(){ return this.div; }
+  }
+
+  // prefer AdvancedMarkerView
+  const vEl = document.createElement('div');
+  vEl.className = 'vehicle';
+  const inner = document.createElement('div'); inner.className = 'vehicle-rot';
+  currentIconUrl = currentIconUrl || (itinerary && itinerary.vehicleIconUrl);
   inner.innerHTML = `<img src="${currentIconUrl}" alt="vehicle"/>`;
-  el.appendChild(inner);
-  vehicleMarker = new mapboxgl.Marker(el).setLngLat(routeGeo[0]).addTo(map);
+  vEl.appendChild(inner);
+
+  if(window.google && google.maps && google.maps.marker && google.maps.marker.AdvancedMarkerView){
+    vehicleMarker = new google.maps.marker.AdvancedMarkerView({ map, position: routeGeo && routeGeo.length ? { lat: routeGeo[0][1], lng: routeGeo[0][0] } : null, content: vEl });
+  } else {
+    vehicleMarker = new VehicleOverlay();
+    vehicleMarker.setMap(map);
+    if(routeGeo && routeGeo.length) vehicleMarker.setPosition({ lat: routeGeo[0][1], lng: routeGeo[0][0] });
+  }
 }
 
 function initIconSelector(){
@@ -142,8 +203,11 @@ function setVehicleIcon(url){
   currentIconUrl = url;
   // update vehicle marker image if already created
   if(vehicleMarker){
-    const imgEl = vehicleMarker.getElement().querySelector('.vehicle-rot img');
-    if(imgEl) imgEl.src = url;
+    const dom = (vehicleMarker.getElement && vehicleMarker.getElement()) || vehicleMarker.content || null;
+    if(dom){
+      const imgEl = dom.querySelector('.vehicle-rot img');
+      if(imgEl) imgEl.src = url;
+    }
   }
 }
 
@@ -178,8 +242,12 @@ function stopAnimation(){
 function restart(){
   stopAnimation();
   // reset
-  if(map.getSource('route-progress')) map.getSource('route-progress').setData({type:'Feature', geometry:{type:'LineString', coordinates:[]}});
-  if(routeGeo && routeGeo.length) vehicleMarker.setLngLat(routeGeo[0]);
+  if(window.progressPolyline) window.progressPolyline.setPath([]);
+  if(routeGeo && routeGeo.length && vehicleMarker){
+    if(typeof vehicleMarker.setPosition === 'function') vehicleMarker.setPosition({ lat: routeGeo[0][1], lng: routeGeo[0][0] });
+    else if('position' in vehicleMarker) try{ vehicleMarker.position = { lat: routeGeo[0][1], lng: routeGeo[0][0] }; }catch(e){}
+    else if(vehicleMarker.setPosition) vehicleMarker.setPosition({ lat: routeGeo[0][1], lng: routeGeo[0][0] });
+  }
   traveledKm = 0; updateDistance(0);
 }
 
@@ -209,14 +277,22 @@ function animate(){
   const partial = routeGeo.slice(0, totalPoints);
   // add last interpolated point for smoothness
   partial.push(pos);
-  if(map.getSource('route-progress')) map.getSource('route-progress').setData({type:'Feature', geometry:{type:'LineString', coordinates: partial}});
-  // move vehicle
-  vehicleMarker.setLngLat(pos);
+  // update progress polyline
+  const partialPath = partial.map(p => ({ lat: p[1], lng: p[0] }));
+  if(window.progressPolyline) window.progressPolyline.setPath(partialPath);
+  // move vehicle (support OverlayView fallback and AdvancedMarkerView)
+  if(vehicleMarker){
+    if(typeof vehicleMarker.setPosition === 'function'){
+      vehicleMarker.setPosition({ lat: pos[1], lng: pos[0] });
+    } else if('position' in vehicleMarker){
+      try{ vehicleMarker.position = { lat: pos[1], lng: pos[0] }; }catch(e){ /* ignore */ }
+    } else if(typeof vehicleMarker.setPosition === 'function'){
+      vehicleMarker.setPosition({ lat: pos[1], lng: pos[0] });
+    }
+  }
   // optionally follow vehicle with the map
   if(followVehicle && map){
-    try{
-      map.easeTo({center: pos, duration: 300});
-    }catch(e){}
+    try{ map.panTo({ lat: pos[1], lng: pos[0] }); }catch(e){}
   }
   // mark stops visited when vehicle is close
   try{
@@ -230,8 +306,19 @@ function animate(){
         // mark visited
         visitedStopIds.add(id);
         try{
-          const el = marker.getElement();
-          if(el) el.classList.add('visited');
+          const el = (marker.getElement && marker.getElement()) || marker.content || null;
+          if(el) {
+            // add visited flag class
+            el.classList.add('visited');
+            // show the teardrop visited-pin and place the stop avatar inside it
+            // Requires `/static/visited-pin.png` to exist; if missing, fall back to a plain red bg
+            const avatar = stop.photoUrl || '';
+            el.innerHTML = `
+              <div class="visited-pin">
+                <img class="visited-avatar" src="${avatar}" alt="stop" />
+              </div>
+            `;
+          }
         }catch(e){}
       }
     })
@@ -239,7 +326,11 @@ function animate(){
   // compute bearing for rotation
   const nextIndex = Math.min(routeGeo.length-1, Math.floor(t*(routeGeo.length-1))+1);
   const br = bearing(pos, routeGeo[nextIndex]);
-  const rotEl = vehicleMarker.getElement().querySelector('.vehicle-rot');
+  let vehDom = null;
+  if(vehicleMarker){
+    vehDom = (vehicleMarker.getElement && vehicleMarker.getElement()) || vehicleMarker.content || null;
+  }
+  const rotEl = vehDom && vehDom.querySelector('.vehicle-rot');
   if(rotEl) rotEl.style.transform = `rotate(${br}deg)`;
   // distance traveled (approx by sampling)
   const traveledRatio = t;

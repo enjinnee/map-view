@@ -7,17 +7,24 @@ html,body,#map{height:100%;width:100%;margin:0;padding:0}
 #controls label{font-size:13px;color:#333}
 #distance{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;background:rgba(255,255,255,0.95);padding:12px 18px;border-radius:20px;font-weight:700;font-size:18px;box-shadow:0 8px 24px rgba(0,0,0,0.18)}
 
-.stop-pin{width:54px;height:68px;cursor:pointer}
+.stop-pin{width:54px;height:68px;cursor:pointer;position:absolute;transform:translate(-50%, -100%);pointer-events:auto}
 .stop-pin .pin{position:relative;width:54px;height:68px}
 .stop-pin .pin:before{content:'';position:absolute;left:50%;transform:translateX(-50%);bottom:0;width:18px;height:18px;background:#c0392b;border-radius:50% 50% 50% 0;transform-origin:center;transform:translateX(-50%) rotate(-45deg)}
 .stop-pin .bg{position:absolute;top:0;left:50%;transform:translateX(-50%);width:46px;height:46px;background:#27ae60;border-radius:50%;box-shadow:0 4px 10px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center}
 .stop-pin.visited .bg{background:#ff4d4f}
-.stop-pin img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #fff}
+.stop-pin img{width:36px;height:36px;object-fit:cover;}
+
+/* visited marker image (teardrop) */
+.stop-pin .visited-marker-img{width:54px;height:68px;display:block}
+
+/* composite visited pin: teardrop with avatar inside */
+.visited-pin{width:46px;height:58px;background-image:url('/static/visited-pin.png');background-size:contain;background-repeat:no-repeat;background-position:center bottom;display:flex;align-items:flex-start;justify-content:center}
+.visited-pin .visited-avatar{width:30px;height:30px;border-radius:50%;margin-top:8px;object-fit:cover;border:2px solid #fff}
 
 .callout{background:#fff;padding:8px 10px;border-radius:8px;box-shadow:0 6px 14px rgba(0,0,0,0.15);font-weight:600}
 
 /* vehicle marker style */
-.vehicle{width:64px;height:32px;pointer-events:none}
+.vehicle{width:48px;height:48px;pointer-events:none;position:absolute;transform:translate(-50%, -50%)}
 .vehicle-rot{width:100%;height:100%;transform-origin:center center;display:flex;align-items:center;justify-content:center}
 .vehicle-rot img{width:100%;height:100%;display:block}
 

@@ -61,7 +61,8 @@ def get_itinerary():
 
     return JSONResponse({
         "title": "Sri Lanka Trip",
-        "vehicleIconUrl": "/static/vehicle.svg",
+        # default vehicle icon: replace with /static/car_top.png (add your attached top-down car image there)
+        "vehicleIconUrl": "/static/car_top.png",
         "stops": stops,
     })
 
@@ -111,6 +112,6 @@ def ping():
     return {"status": "ok"}
 
 
-# Note: To replace the mock route with Mapbox Directions (or other routing service):
+# Note: To replace the mock route with Google Maps Directions (or other routing service):
 # - Call the external routing API in /route and return geometry.coordinates and distanceKm.
 # - Keep the same response structure so frontend can switch without changes.

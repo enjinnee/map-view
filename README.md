@@ -1,4 +1,4 @@
-# Sri Lanka Route Animation (FastAPI + Mapbox GL JS)
+# Sri Lanka Route Animation (FastAPI + Google Maps JS)
 
 Run locally (macOS / Linux):
 
@@ -22,4 +22,4 @@ uvicorn main:app --reload --port 8000
 Notes:
 - The backend exposes `/itinerary` and `/route?from=<lat,lng>&to=<lat,lng>`.
 - Frontend is served from the `frontend/` folder by FastAPI static mount.
-- Mock route generation is in `backend/main.py`. Replace with Mapbox Directions API there if you have a token.
+- Mock route generation is in `backend/main.py`. Replace with Google Maps Directions API (or your preferred routing service) there if you have an API key.
