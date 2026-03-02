@@ -1,0 +1,28 @@
+html,body,#map{height:100%;width:100%;margin:0;padding:0}
+#map{position:fixed;left:0;top:0;right:0;bottom:0}
+#ui{position:fixed;left:0;right:0;bottom:20px;pointer-events:none}
+#controls{position:fixed;left:20px;bottom:20px;pointer-events:auto;background:rgba(255,255,255,0.95);padding:8px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.15);display:flex;gap:8px;align-items:center}
+#controls button{padding:8px 12px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer}
+#controls button.active{background:#2d9cdb;color:#fff;border-color:transparent}
+#controls label{font-size:13px;color:#333}
+#distance{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;background:rgba(255,255,255,0.95);padding:12px 18px;border-radius:20px;font-weight:700;font-size:18px;box-shadow:0 8px 24px rgba(0,0,0,0.18)}
+
+.stop-pin{width:54px;height:68px;cursor:pointer}
+.stop-pin .pin{position:relative;width:54px;height:68px}
+.stop-pin .pin:before{content:'';position:absolute;left:50%;transform:translateX(-50%);bottom:0;width:18px;height:18px;background:#c0392b;border-radius:50% 50% 50% 0;transform-origin:center;transform:translateX(-50%) rotate(-45deg)}
+.stop-pin .bg{position:absolute;top:0;left:50%;transform:translateX(-50%);width:46px;height:46px;background:#27ae60;border-radius:50%;box-shadow:0 4px 10px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center}
+.stop-pin.visited .bg{background:#ff4d4f}
+.stop-pin img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #fff}
+
+.callout{background:#fff;padding:8px 10px;border-radius:8px;box-shadow:0 6px 14px rgba(0,0,0,0.15);font-weight:600}
+
+/* vehicle marker style */
+.vehicle{width:64px;height:32px;pointer-events:none}
+.vehicle-rot{width:100%;height:100%;transform-origin:center center;display:flex;align-items:center;justify-content:center}
+.vehicle-rot img{width:100%;height:100%;display:block}
+
+/* Icon selector */
+.icon-select{display:flex;gap:6px;align-items:center;margin-left:8px}
+.icon-select .icon{width:40px;height:40px;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,0.12);cursor:pointer;border:2px solid transparent}
+.icon-select .icon.selected{border-color:#2d9cdb}
+.icon-select .icon[alt="bus"]{background:#fff}
