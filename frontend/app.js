@@ -72,7 +72,7 @@ async function setupStops(stops){
     onAdd(){
       this.div = document.createElement('div');
       this.div.className = 'stop-pin';
-      this.div.innerHTML = `<div class="pin"><div class="bg"><img src="${this.stop.photoUrl}"/></div></div>`;
+      this.div.innerHTML = `<div class="pin"><div class="bg"><img src="${this.stop.photoUrl}"/></div></div>${this.stop.day != null ? `<div class="day-label">Day ${this.stop.day}</div>` : ''}`;
       this.getPanes().overlayMouseTarget.appendChild(this.div);
     }
     draw(){
@@ -95,7 +95,7 @@ async function setupStops(stops){
     // prefer AdvancedMarkerView when available
     const el = document.createElement('div');
     el.className = 'stop-pin';
-    el.innerHTML = `<div class="pin"><div class="bg"><img src="${s.photoUrl}"/></div></div>`;
+    el.innerHTML = `<div class="pin"><div class="bg"><img src="${s.photoUrl}"/></div></div>${s.day != null ? `<div class="day-label">Day ${s.day}</div>` : ''}`;
 
     let marker;
     if(window.google && google.maps && google.maps.marker && google.maps.marker.AdvancedMarkerView){
@@ -317,6 +317,7 @@ function animate(){
               <div class="visited-pin">
                 <img class="visited-avatar" src="${avatar}" alt="stop" />
               </div>
+              ${stop.day != null ? `<div class="day-label day-label--visited">Day ${stop.day}</div>` : ''}
             `;
           }
         }catch(e){}

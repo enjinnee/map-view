@@ -6,6 +6,10 @@ from pydantic import BaseModel
 from typing import List, Tuple
 from pathlib import Path
 import math
+import os
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 app = FastAPI(title="Sri Lanka Route Animation Mock API")
 
@@ -29,7 +33,9 @@ app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIR)), name="frontend_as
 @app.get("/", response_class=HTMLResponse)
 def index():
     index_path = FRONTEND_DIR / "index.html"
-    return HTMLResponse(index_path.read_text(encoding="utf-8"))
+    html = index_path.read_text(encoding="utf-8")
+    html = html.replace("{{GOOGLE_MAPS_API_KEY}}", os.environ.get("GOOGLE_MAPS_API_KEY", ""))
+    return HTMLResponse(html)
 
 
 def haversine_km(a: Tuple[float, float], b: Tuple[float, float]) -> float:
@@ -49,14 +55,14 @@ def haversine_km(a: Tuple[float, float], b: Tuple[float, float]) -> float:
 def get_itinerary():
     # Mock itinerary for Sri Lanka (6-7 stops)
     stops = [
-        {"id": "colombo", "name": "Colombo", "lat": 6.9271, "lng": 79.8612, "photoUrl": "/static/stops/colombo.svg"},
-        {"id": "kandy", "name": "Kandy", "lat": 7.2906, "lng": 80.6337, "photoUrl": "/static/stops/kandy.svg"},
-        {"id": "sigiriya", "name": "Sigiriya", "lat": 7.9567, "lng": 80.7608, "photoUrl": "/static/stops/sigiriya.svg"},
-        {"id": "nuwara_eliya", "name": "Nuwara Eliya", "lat": 6.9497, "lng": 80.7893, "photoUrl": "/static/stops/nuwara_eliya.svg"},
-        {"id": "ella", "name": "Ella", "lat": 6.8393, "lng": 81.0534, "photoUrl": "/static/stops/ella.svg"},
-        {"id": "yala", "name": "Yala", "lat": 6.3615, "lng": 81.4361, "photoUrl": "/static/stops/yala.svg"},
-        {"id": "mirissa", "name": "Mirissa", "lat": 5.9482, "lng": 80.4700, "photoUrl": "/static/stops/mirissa.svg"},
-        {"id": "jaffna", "name": "Jaffna", "lat": 9.6615, "lng": 80.1836, "photoUrl": "/static/stops/jaffna.svg"},
+        {"id": "colombo", "name": "Colombo", "day": 1, "lat": 6.9271, "lng": 79.8612, "photoUrl": "/static/stops/colombo.svg"},
+        {"id": "kandy", "name": "Kandy", "day": 1, "lat": 7.2906, "lng": 80.6337, "photoUrl": "/static/stops/kandy.svg"},
+        {"id": "sigiriya", "name": "Sigiriya", "day": 2, "lat": 7.9567, "lng": 80.7608, "photoUrl": "/static/stops/sigiriya.svg"},
+        {"id": "nuwara_eliya", "name": "Nuwara Eliya", "day": 3, "lat": 6.9497, "lng": 80.7893, "photoUrl": "/static/stops/nuwara_eliya.svg"},
+        {"id": "ella", "name": "Ella", "day": 3, "lat": 6.8393, "lng": 81.0534, "photoUrl": "/static/stops/ella.svg"},
+        {"id": "yala", "name": "Yala", "day": 4, "lat": 6.3615, "lng": 81.4361, "photoUrl": "/static/stops/yala.svg"},
+        {"id": "mirissa", "name": "Mirissa", "day": 5, "lat": 5.9482, "lng": 80.4700, "photoUrl": "/static/stops/mirissa.svg"},
+        {"id": "jaffna", "name": "Jaffna", "day": 6, "lat": 9.6615, "lng": 80.1836, "photoUrl": "/static/stops/jaffna.svg"},
     ]
 
     return JSONResponse({
