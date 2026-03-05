@@ -56,6 +56,7 @@ function initMap(){
     itinerary = await fetchItinerary();
     await setupStops(itinerary.stops);
     await buildFullRoute(itinerary.stops);
+    computeRouteDistances();
     addRouteLayers();
     addVehicleMarker();
     fitMapToStops(itinerary.stops);
@@ -235,6 +236,30 @@ function bearing(a,b){
 
 let startTime, durationMs = 30000; // base duration for whole trip
 let traveledKm = 0;
+let routeDistances = []; // cumulative km per coord in routeGeo
+let totalRouteKm = 0;
+
+function computeRouteDistances(){
+  routeDistances = [0];
+  for(let i=1;i<routeGeo.length;i++){
+    const d = haversine(routeGeo[i-1][1],routeGeo[i-1][0],routeGeo[i][1],routeGeo[i][0]);
+    routeDistances.push(routeDistances[routeDistances.length-1] + d);
+  }
+  totalRouteKm = routeDistances[routeDistances.length-1] || 0;
+}
+
+function interpolateByDistance(targetKm){
+  if(!routeDistances.length) return routeGeo[0];
+  let lo=0, hi=routeDistances.length-1;
+  while(lo < hi-1){
+    const mid=(lo+hi)>>1;
+    if(routeDistances[mid]<=targetKm) lo=mid; else hi=mid;
+  }
+  const segDist = routeDistances[hi]-routeDistances[lo];
+  const f = segDist<1e-9 ? 0 : (targetKm-routeDistances[lo])/segDist;
+  const a=routeGeo[lo], b=routeGeo[hi];
+  return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f];
+}
 
 function startAnimation(){
   if(playing) return;
@@ -292,10 +317,12 @@ function animate(){
   const now = performance.now();
   const elapsed = now - startTime;
   const t = Math.min(1, elapsed / durationMs);
-  const pos = interpolateCoords(routeGeo, t);
-  // update progress line
-  const totalPoints = Math.floor(t * (routeGeo.length-1)) + 1;
-  const partial = routeGeo.slice(0, totalPoints);
+  const targetKm = t * totalRouteKm;
+  const pos = interpolateByDistance(targetKm);
+  // update progress line — slice by distance index
+  let partialEnd = routeDistances.findIndex(d => d >= targetKm);
+  if(partialEnd < 0) partialEnd = routeGeo.length - 1;
+  const partial = routeGeo.slice(0, partialEnd + 1);
   // add last interpolated point for smoothness
   partial.push(pos);
   // update progress polyline
@@ -365,12 +392,7 @@ function animate(){
   }
   const rotEl = vehDom && vehDom.querySelector('.vehicle-rot');
   if(rotEl) rotEl.style.transform = `rotate(${br}deg)`;
-  // distance traveled (approx by sampling)
-  const traveledRatio = t;
-  // compute total route length (estimate by haversine sums)
-  const totalKm = estimateTotalKm(routeGeo);
-  const km = totalKm * traveledRatio;
-  updateDistance(km);
+  updateDistance(targetKm);
 
   if(t<1 && playing){
     animationRequest = requestAnimationFrame(animate);
