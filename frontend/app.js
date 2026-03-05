@@ -1,6 +1,10 @@
 // Frontend animation logic (vanilla JS)
 // ANIMATION_SPEED controls baseline speed multiplier
 const ANIMATION_SPEED = 1.0;
+const CAMERA_TILT = 67.5;
+const CAMERA_HEADING = 0;
+const CAMERA_ZOOM_FOLLOW = 10.6;
+const MIN_3D_ZOOM = 10.5;
 
 let map;
 let itinerary;
@@ -35,12 +39,16 @@ async function fetchRoute(a,b){
 
 function initMap(){
   // Initialize Google Maps (map-only 3D via tilt/heading)
+  const mapId = window.APP_CONFIG && window.APP_CONFIG.mapId ? window.APP_CONFIG.mapId : undefined;
   map = new google.maps.Map(document.getElementById('map'), {
     center: { lat: 7.5, lng: 80.7 },
     zoom: 7,
-    tilt: 45,
-    heading: 0,
-    mapId: undefined // allow default style; user can enable premium mapId if desired
+    mapTypeId: 'roadmap',
+    tilt: CAMERA_TILT,
+    heading: CAMERA_HEADING,
+    mapId,
+    headingInteractionEnabled: true,
+    tiltInteractionEnabled: true,
   });
 
   // wait for idle which indicates initial tiles loaded
@@ -59,6 +67,11 @@ function fitMapToStops(stops){
   const bounds = new google.maps.LatLngBounds();
   stops.forEach(s => bounds.extend(new google.maps.LatLng(s.lat, s.lng)));
   map.fitBounds(bounds, 60);
+  // fitBounds can reset camera; restore perspective after fitting.
+  google.maps.event.addListenerOnce(map, 'idle', () => {
+    map.setTilt(CAMERA_TILT);
+    map.setHeading(CAMERA_HEADING);
+  });
 }
 
 async function setupStops(stops){
@@ -231,6 +244,14 @@ function startAnimation(){
   const speedSlider = document.getElementById('speed');
   speedMultiplier = parseFloat(speedSlider.value);
   durationMs = 30000 / speedMultiplier;
+  if (routeGeo && routeGeo.length) {
+    map.moveCamera({
+      center: { lat: routeGeo[0][1], lng: routeGeo[0][0] },
+      zoom: Math.max(map.getZoom() || 0, MIN_3D_ZOOM),
+      tilt: CAMERA_TILT,
+      heading: CAMERA_HEADING,
+    });
+  }
   animate();
 }
 
@@ -292,7 +313,18 @@ function animate(){
   }
   // optionally follow vehicle with the map
   if(followVehicle && map){
-    try{ map.panTo({ lat: pos[1], lng: pos[0] }); }catch(e){}
+    try{
+      map.moveCamera({
+        center: { lat: pos[1], lng: pos[0] },
+        zoom: Math.max(CAMERA_ZOOM_FOLLOW, MIN_3D_ZOOM),
+        tilt: CAMERA_TILT,
+        heading: CAMERA_HEADING,
+      });
+    }catch(e){
+      map.panTo({ lat: pos[1], lng: pos[0] });
+      map.setTilt(CAMERA_TILT);
+      map.setHeading(CAMERA_HEADING);
+    }
   }
   // mark stops visited when vehicle is close
   try{

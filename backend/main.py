@@ -35,6 +35,7 @@ def index():
     index_path = FRONTEND_DIR / "index.html"
     html = index_path.read_text(encoding="utf-8")
     html = html.replace("{{GOOGLE_MAPS_API_KEY}}", os.environ.get("GOOGLE_MAPS_API_KEY", ""))
+    html = html.replace("{{GOOGLE_MAPS_MAP_ID}}", os.environ.get("GOOGLE_MAPS_MAP_ID", ""))
     return HTMLResponse(html)
 
 
@@ -54,17 +55,50 @@ def haversine_km(a: Tuple[float, float], b: Tuple[float, float]) -> float:
 @app.get("/itinerary")
 def get_itinerary():
     # Mock itinerary for Sri Lanka (6-7 stops)
+    # stops = [
+    #     {"id": "colombo", "name": "Colombo", "day": 1, "lat": 6.9271, "lng": 79.8612, "photoUrl": "/static/stops/colombo.svg"},
+    #     {"id": "kandy", "name": "Kandy", "day": 1, "lat": 7.2906, "lng": 80.6337, "photoUrl": "/static/stops/kandy.svg"},
+    #     {"id": "sigiriya", "name": "Sigiriya", "day": 2, "lat": 7.9567, "lng": 80.7608, "photoUrl": "/static/stops/sigiriya.svg"},
+    #     {"id": "nuwara_eliya", "name": "Nuwara Eliya", "day": 3, "lat": 6.9497, "lng": 80.7893, "photoUrl": "/static/stops/nuwara_eliya.svg"},
+    #     {"id": "ella", "name": "Ella", "day": 3, "lat": 6.8393, "lng": 81.0534, "photoUrl": "/static/stops/ella.svg"},
+    #     {"id": "yala", "name": "Yala", "day": 4, "lat": 6.3615, "lng": 81.4361, "photoUrl": "/static/stops/yala.svg"},
+    #     {"id": "mirissa", "name": "Mirissa", "day": 5, "lat": 5.9482, "lng": 80.4700, "photoUrl": "/static/stops/mirissa.svg"},
+    #     # {"id": "jaffna", "name": "Jaffna", "day": 6, "lat": 9.6615, "lng": 80.1836, "photoUrl": "/static/stops/jaffna.svg"},
+    # ]
     stops = [
-        {"id": "colombo", "name": "Colombo", "day": 1, "lat": 6.9271, "lng": 79.8612, "photoUrl": "/static/stops/colombo.svg"},
-        {"id": "kandy", "name": "Kandy", "day": 1, "lat": 7.2906, "lng": 80.6337, "photoUrl": "/static/stops/kandy.svg"},
-        {"id": "sigiriya", "name": "Sigiriya", "day": 2, "lat": 7.9567, "lng": 80.7608, "photoUrl": "/static/stops/sigiriya.svg"},
-        {"id": "nuwara_eliya", "name": "Nuwara Eliya", "day": 3, "lat": 6.9497, "lng": 80.7893, "photoUrl": "/static/stops/nuwara_eliya.svg"},
-        {"id": "ella", "name": "Ella", "day": 3, "lat": 6.8393, "lng": 81.0534, "photoUrl": "/static/stops/ella.svg"},
-        {"id": "yala", "name": "Yala", "day": 4, "lat": 6.3615, "lng": 81.4361, "photoUrl": "/static/stops/yala.svg"},
-        {"id": "mirissa", "name": "Mirissa", "day": 5, "lat": 5.9482, "lng": 80.4700, "photoUrl": "/static/stops/mirissa.svg"},
-        {"id": "jaffna", "name": "Jaffna", "day": 6, "lat": 9.6615, "lng": 80.1836, "photoUrl": "/static/stops/jaffna.svg"},
+        {
+            "id": "bia",
+            "name": "Bandaranaike International Airport (BIA)",
+            "day": 1,
+            "lat": 7.1274,
+            "lng": 79.8837,
+            "photoUrl": "https://storage.googleapis.com/manike-ai-media/experience-images/tenants/tenant-670177c55486/images/f24c733d-7cfe-4a6f-bdb8-22943cb574b2.jpg",
+        },
+        {
+            "id": "fortress_koggala",
+            "name": "The Fortress Resort & Spa, Koggala",
+            "day": 1,
+            "lat": 5.9686,
+            "lng": 80.3475,
+            "photoUrl": "https://storage.googleapis.com/manike-ai-media/experience-images/tenants/tenant-670177c55486/images/2f5a9b46-dd8a-4579-9213-ecbf0095f8d2.jpg",
+        },
+        {
+            "id": "unawatuna_beach",
+            "name": "Unawatuna Beach",
+            "day": 1,
+            "lat": 6.0076,
+            "lng": 80.2520,
+            "photoUrl": "https://storage.googleapis.com/manike-ai-media/experience-images/tenants/tenant-670177c55486/images/8d7daaae-4fb7-4051-aa41-4e0dc62769e1.jpg",
+        },
+        {
+            "id": "galle_fort",
+            "name": "Galle Fort",
+            "day": 2,
+            "lat": 6.0319,
+            "lng": 80.2210,
+            "photoUrl": "https://storage.googleapis.com/manike-ai-media/experience-images/tenants/tenant-670177c55486/images/c4df9fac-37ee-4392-a4b3-65a292895efd.jpg",
+        },
     ]
-
     return JSONResponse({
         "title": "Sri Lanka Trip",
         # default vehicle icon: replace with /static/car_top.png (add your attached top-down car image there)

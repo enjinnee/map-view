@@ -24,7 +24,12 @@
       <div id="distance">0 KM</div>
     </div>
 
-    <script src="https://maps.googleapis.com/maps/api/js?key={{GOOGLE_MAPS_API_KEY}}&v=weekly&libraries=marker"></script>
+    <script>
+      window.APP_CONFIG = {
+        mapId: "{{GOOGLE_MAPS_MAP_ID}}"
+      };
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{GOOGLE_MAPS_API_KEY}}&v=beta&libraries=marker&map_ids={{GOOGLE_MAPS_MAP_ID}}"></script>
     <script src="/assets/app.js"></script>
   </body>
 </html>
