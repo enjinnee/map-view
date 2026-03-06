@@ -1,0 +1,127 @@
+<svg width="220" height="760" viewBox="0 0 220 760" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <defs>
+    <linearGradient id="engineBody" x1="110" y1="0" x2="110" y2="130" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FAFC"/>
+      <stop offset="1" stop-color="#CBD5E1"/>
+    </linearGradient>
+    <linearGradient id="coachBody" x1="110" y1="0" x2="110" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#D9E2EC"/>
+    </linearGradient>
+    <linearGradient id="cargoBody" x1="110" y1="0" x2="110" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="windowBlue" x1="110" y1="0" x2="110" y2="42" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7DD3FC"/>
+      <stop offset="1" stop-color="#2563EB"/>
+    </linearGradient>
+    <style>
+      .outline { stroke:#0F172A; stroke-width:4; stroke-linejoin:round; }
+      .soft-outline { stroke:#1E293B; stroke-width:2; stroke-linejoin:round; }
+      .stripe { fill:#1D9BF0; }
+      .red { fill:#EF4444; }
+      .dark { fill:#334155; }
+      .roof { fill:#64748B; }
+      .glass { fill:url(#windowBlue); }
+      .shadow { fill:#0F172A; opacity:.10; }
+    </style>
+  </defs>
+
+  <!-- ENGINE -->
+  <g transform="translate(20 10)">
+    <rect x="26" y="0" width="128" height="140" rx="38" fill="url(#engineBody)" class="outline"/>
+    <path d="M46 16C46 7 53 0 62 0H118C127 0 134 7 134 16V46H46V16Z" fill="#2563EB"/>
+    <path d="M54 18C54 11 59 6 66 6H114C121 6 126 11 126 18V42H54V18Z" class="glass" stroke="#0F172A" stroke-width="3"/>
+    <rect x="36" y="52" width="108" height="16" rx="8" class="dark"/>
+    <rect x="44" y="74" width="92" height="22" rx="8" class="roof" stroke="#0F172A" stroke-width="3"/>
+    <g stroke="#E2E8F0" stroke-width="2">
+      <line x1="56" y1="80" x2="124" y2="80"/>
+      <line x1="56" y1="86" x2="124" y2="86"/>
+      <line x1="56" y1="92" x2="124" y2="92"/>
+    </g>
+    <rect x="52" y="102" width="76" height="24" rx="6" class="dark" stroke="#0F172A" stroke-width="3"/>
+    <path d="M66 108L90 120L114 108" stroke="#E2E8F0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M66 120L90 108L114 120" stroke="#E2E8F0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="34" y="0" width="12" height="140" rx="6" class="stripe"/>
+    <rect x="134" y="0" width="12" height="140" rx="6" class="stripe"/>
+    <rect x="52" y="126" width="76" height="10" rx="5" class="red"/>
+    <rect x="84" y="140" width="12" height="14" rx="3" class="dark"/>
+    <rect x="88" y="154" width="4" height="10" rx="2" class="dark"/>
+  </g>
+
+  <!-- CONNECTOR -->
+  <g transform="translate(20 174)">
+    <rect x="94" y="0" width="12" height="16" rx="4" class="dark"/>
+    <rect x="90" y="14" width="20" height="8" rx="4" fill="#475569"/>
+  </g>
+
+  <!-- COACH 1 -->
+  <g transform="translate(20 198)">
+    <rect x="26" y="0" width="128" height="120" rx="18" fill="url(#coachBody)" class="outline"/>
+    <rect x="36" y="0" width="12" height="120" rx="6" class="stripe"/>
+    <rect x="132" y="0" width="12" height="120" rx="6" class="stripe"/>
+    <rect x="52" y="16" width="76" height="16" rx="7" class="roof" stroke="#0F172A" stroke-width="3"/>
+    <rect x="48" y="42" width="84" height="26" rx="8" fill="#94A3B8" stroke="#0F172A" stroke-width="3"/>
+    <rect x="48" y="76" width="84" height="26" rx="8" fill="#94A3B8" stroke="#0F172A" stroke-width="3"/>
+    <rect x="38" y="34" width="10" height="72" rx="4" fill="#E2E8F0"/>
+    <rect x="144" y="34" width="10" height="72" rx="4" fill="#E2E8F0"/>
+    <rect x="52" y="110" width="76" height="6" rx="3" class="red"/>
+  </g>
+
+  <!-- CONNECTOR -->
+  <g transform="translate(20 326)">
+    <rect x="94" y="0" width="12" height="16" rx="4" class="dark"/>
+    <rect x="90" y="14" width="20" height="8" rx="4" fill="#475569"/>
+  </g>
+
+  <!-- COACH 2 -->
+  <g transform="translate(20 350)">
+    <rect x="26" y="0" width="128" height="120" rx="18" fill="url(#coachBody)" class="outline"/>
+    <rect x="36" y="0" width="12" height="120" rx="6" class="stripe"/>
+    <rect x="132" y="0" width="12" height="120" rx="6" class="stripe"/>
+    <rect x="52" y="16" width="76" height="16" rx="7" class="roof" stroke="#0F172A" stroke-width="3"/>
+    <rect x="48" y="42" width="84" height="26" rx="8" fill="#94A3B8" stroke="#0F172A" stroke-width="3"/>
+    <rect x="48" y="76" width="84" height="26" rx="8" fill="#94A3B8" stroke="#0F172A" stroke-width="3"/>
+    <rect x="38" y="34" width="10" height="72" rx="4" fill="#E2E8F0"/>
+    <rect x="144" y="34" width="10" height="72" rx="4" fill="#E2E8F0"/>
+    <rect x="52" y="110" width="76" height="6" rx="3" class="red"/>
+  </g>
+
+  <!-- CONNECTOR -->
+  <g transform="translate(20 478)">
+    <rect x="94" y="0" width="12" height="16" rx="4" class="dark"/>
+    <rect x="90" y="14" width="20" height="8" rx="4" fill="#475569"/>
+  </g>
+
+  <!-- COACH 3 -->
+  <g transform="translate(20 502)">
+    <rect x="26" y="0" width="128" height="120" rx="18" fill="url(#coachBody)" class="outline"/>
+    <rect x="36" y="0" width="12" height="120" rx="6" class="stripe"/>
+    <rect x="132" y="0" width="12" height="120" rx="6" class="stripe"/>
+    <rect x="52" y="16" width="76" height="16" rx="7" class="roof" stroke="#0F172A" stroke-width="3"/>
+    <rect x="48" y="42" width="84" height="26" rx="8" fill="#94A3B8" stroke="#0F172A" stroke-width="3"/>
+    <rect x="48" y="76" width="84" height="26" rx="8" fill="#94A3B8" stroke="#0F172A" stroke-width="3"/>
+    <rect x="38" y="34" width="10" height="72" rx="4" fill="#E2E8F0"/>
+    <rect x="144" y="34" width="10" height="72" rx="4" fill="#E2E8F0"/>
+    <rect x="52" y="110" width="76" height="6" rx="3" class="red"/>
+  </g>
+
+  <!-- CONNECTOR -->
+  <g transform="translate(20 630)">
+    <rect x="94" y="0" width="12" height="16" rx="4" class="dark"/>
+    <rect x="90" y="14" width="20" height="8" rx="4" fill="#475569"/>
+  </g>
+
+  <!-- CARGO CAR -->
+  <g transform="translate(20 654)">
+    <rect x="26" y="0" width="128" height="90" rx="16" fill="url(#cargoBody)" class="outline"/>
+    <rect x="36" y="0" width="12" height="90" rx="6" fill="#2563EB"/>
+    <rect x="132" y="0" width="12" height="90" rx="6" fill="#2563EB"/>
+    <rect x="48" y="18" width="84" height="20" rx="6" fill="#60A5FA" stroke="#0F172A" stroke-width="3"/>
+    <rect x="48" y="48" width="84" height="24" rx="4" fill="#1E40AF" stroke="#0F172A" stroke-width="3"/>
+    <path d="M54 52L74 68M74 52L54 68" stroke="#93C5FD" stroke-width="4" stroke-linecap="round"/>
+    <path d="M106 52L126 68M126 52L106 68" stroke="#93C5FD" stroke-width="4" stroke-linecap="round"/>
+    <rect x="52" y="80" width="76" height="6" rx="3" class="red"/>
+  </g>
+</svg>

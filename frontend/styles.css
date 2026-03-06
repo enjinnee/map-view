@@ -28,12 +28,15 @@ html,body,#map{height:100%;width:100%;margin:0;padding:0}
 .callout{background:#fff;padding:8px 10px;border-radius:8px;box-shadow:0 6px 14px rgba(0,0,0,0.15);font-weight:600}
 
 /* vehicle marker style */
-.vehicle{width:48px;height:48px;pointer-events:none;position:absolute;transform:translate(-50%, -50%)}
+.vehicle{width:80px;height:80px;pointer-events:none;position:absolute;transform:translate(-50%, -50%)}
 .vehicle-rot{width:100%;height:100%;transform-origin:center center;display:flex;align-items:center;justify-content:center}
-.vehicle-rot img{width:100%;height:100%;display:block}
+.vehicle-rot img{width:100%;height:100%;display:block;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.6))}
+/* train.svg is 220×760 (tall portrait) — keep proportional width, let height scale */
+.vehicle-rot img[src*="train.svg"]{width:40px;height:auto}
 
 /* Icon selector */
 .icon-select{display:flex;gap:6px;align-items:center;margin-left:8px}
 .icon-select .icon{width:40px;height:40px;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,0.12);cursor:pointer;border:2px solid transparent}
 .icon-select .icon.selected{border-color:#2d9cdb}
 .icon-select .icon[alt="bus"]{background:#fff}
+.icon-select .icon[alt="train-svg"]{background:#1a1a2e}

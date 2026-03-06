@@ -411,7 +411,75 @@ function haversine(lat1,lon1,lat2,lon2){
   const c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); return R*c;
 }
 
-// UI wiring
+// ── Recording ────────────────────────────────────────────────────────────────
+
+let mediaRecorder = null;
+let recordedChunks = [];
+let isRecording = false;
+let audioCtx = null;
+let ambientNodes = [];
+
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: true });
+    playAmbientMusic();
+    recordedChunks = [];
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(recordedChunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'sri-lanka-trip.webm'; a.click();
+      URL.revokeObjectURL(url);
+      stopAmbientMusic();
+    };
+    mediaRecorder.start();
+    isRecording = true;
+    const btn = document.getElementById('recordBtn');
+    if (btn) { btn.textContent = '⏹ Stop'; btn.classList.add('active'); }
+  } catch (e) {
+    console.error('Recording failed:', e);
+  }
+}
+
+function stopRecording() {
+  if (!mediaRecorder || !isRecording) return;
+  mediaRecorder.stop();
+  mediaRecorder.stream.getTracks().forEach(t => t.stop());
+  isRecording = false;
+  const btn = document.getElementById('recordBtn');
+  if (btn) { btn.textContent = '⏺ Record'; btn.classList.remove('active'); }
+}
+
+function playAmbientMusic() {
+  audioCtx = new AudioContext();
+  const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88];
+  let time = audioCtx.currentTime;
+  for (let i = 0; i < 60; i++) {
+    const freq = notes[Math.floor(Math.random() * notes.length)];
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, time);
+    gain.gain.linearRampToValueAtTime(0.07, time + 0.1);
+    gain.gain.linearRampToValueAtTime(0, time + 1.5);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(time);
+    osc.stop(time + 1.7);
+    ambientNodes.push(osc);
+    time += 0.8 + Math.random() * 0.4;
+  }
+}
+
+function stopAmbientMusic() {
+  ambientNodes.forEach(n => { try { n.stop(); } catch (_) {} });
+  ambientNodes = [];
+  if (audioCtx) { audioCtx.close(); audioCtx = null; }
+}
+
 // UI wiring
 document.addEventListener('DOMContentLoaded', ()=>{
   initMap();
@@ -422,11 +490,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('speed').addEventListener('input', (e)=>{
     speedMultiplier = parseFloat(e.target.value);
     if(playing){
-      // adjust duration proportionally
       const elapsed = performance.now() - startTime;
       const progress = elapsed / durationMs;
       durationMs = 30000 / speedMultiplier;
       startTime = performance.now() - progress * durationMs;
     }
-  })
+  });
+  const recordBtn = document.getElementById('recordBtn');
+  if (recordBtn) recordBtn.addEventListener('click', () => {
+    if (isRecording) stopRecording();
+    else startRecording();
+  });
 })
